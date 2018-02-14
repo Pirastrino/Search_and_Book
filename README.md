@@ -37,6 +37,8 @@ This program consists of three main functions and eight arguments:
 
 **Please note that the cheapest price does not include baggage price. The cheapest flight is selected based on base flight/combination price (fare).**
 
+**If `--date` is today then it will search for combinations with departure 'now + 4 hours'. That also means that if you search after 8PM then booked combination will have departure date of the first flight next day!**
+
 **The program will try to check combination 50 times first and it will book the combination only if *flights_checked = True* and *flights_invalid = False*.**
 
 **Successfully checked combination is booked by [http://128.199.48.38:8080/booking](http://128.199.48.38:8080/booking) API.**  
