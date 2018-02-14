@@ -5,8 +5,6 @@
 **Autor:** Martin Began  
 [Task Description](https://engeto.online/study/lesson/_wl9/unit/_36ZR)
 
-***
-
 ## Description  
 This program consists of three main functions and eight arguments:
 
