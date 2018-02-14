@@ -17,7 +17,7 @@ parser.add_argument('--fastest', action='store_true')
 parser.add_argument('--bags', choices=[0, 1, 2], type=int, default=0)
 
 
-class CheckFlightError(Exception):
+class UnexpectedError(Exception):
     pass
 
 
@@ -103,34 +103,42 @@ def save_booking(booking_token, new_search):
 if __name__ == '__main__':
     args = parser.parse_args()
     bags = args.bags
-    try:
-        combinations = search_flight(args)
-        if len(combinations) == 0:
-            print('No flight found, please try again.')
-            sys.exit(0)
-        i = 0
-        if bags > 0:
+    combinations = search_flight(args)
+    if len(combinations) == 0:
+        print('No flight found, please try again.')
+        sys.exit(0)
+    if bags > 0:
+        try:
             # Find booking with existing bag price for requested number of bags
-            while str(bags) not in combinations[i]['bags_price'] and i < len(combinations)-1:
+            i = 0
+            while str(bags) not in combinations[i]['bags_price'] and i < len(combinations):
                 i += 1
-        token = combinations[i]['booking_token']
-        # Try to book
+            token = combinations[i]['booking_token']
+        except IndexError:
+            print('No suitable combination found for requested number of bags: {}'.format(args.bags))
+            sys.exit(0)
+    else:
+        token = combinations[0]['booking_token']
+    try:
+        # Check and book the combination
         flight_checked, flight_invalid = False, False
         rep = 1
-        while flight_checked is not True and flight_invalid is not True:
+        while flight_checked is not True and flight_invalid is not True and rep < 50:
             flight_checked, flight_invalid = check_flights(combinations[rep]['booking_token'], args)
-            print('Booking call no.: {}'.format(rep))
+            print('Checking flights... {}'.format(rep))
             rep += 1
             if not flight_checked and not flight_invalid:
                 time.sleep(5)
-    except CheckFlightError:
-        print('I was not able to check any combination.')
-        print('Please try again.')
-        sys.exit(0)
-    booking = save_booking(token, args)
-    print('Checked: {}'.format(flight_checked))
-    print('Invalid: {}'.format(flight_invalid))
-    print('PNR: {}'.format(booking['pnr']))
-    print('Status: {}'.format(booking['status']))
-
-# handle from !!2
+        if flight_checked == True and flight_invalid == False:
+            booking = save_booking(token, args)
+            print('Checked: {}'.format(flight_checked))
+            print('Invalid: {}'.format(flight_invalid))
+            print('PNR: {}'.format(booking['pnr']))
+            print('Status: {}'.format(booking['status']))
+        else:
+            print('I was not able to check selected combination with Kiwi.com API :(.')
+            print('Please try again later.')
+            sys.exit(0)
+    except UnexpectedError:
+        print('Unknown Error.')
+        sys.exit(1)
