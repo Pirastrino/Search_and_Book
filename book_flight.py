@@ -5,7 +5,6 @@ import requests as rq
 import sys
 import time
 
-
 parser = arg.ArgumentParser()
 parser.add_argument('--date', required=True)
 parser.add_argument('--from', dest='flyFrom', required=True)
@@ -85,15 +84,15 @@ def save_booking(booking_token, new_search):
     Book flight for the default passenger
     """
     data_json = {
-            'bags': new_search.bags,
-            'booking_token': booking_token,
-            'currency': 'EUR',
-            'passengers': [{'birthday': '1989-01-25',
-                            'documentID': 'EH000000',
-                            'email': 'martin.began@kiwi.com',
-                            'firstName': 'test',
-                            'lastName': 'test',
-                            'title': 'Mr'}]}
+        'bags': new_search.bags,
+        'booking_token': booking_token,
+        'currency': 'EUR',
+        'passengers': [{'birthday': '1989-01-25',
+                        'documentID': 'EH000000',
+                        'email': 'martin.began@kiwi.com',
+                        'firstName': 'test',
+                        'lastName': 'test',
+                        'title': 'Mr'}]}
     headers = {'Content-type': 'application/json'}
     url = 'http://128.199.48.38:8080/booking'
     response = rq.post(url, data=json.dumps(data_json), headers=headers).json()
@@ -118,18 +117,19 @@ if __name__ == '__main__':
             print('No suitable combination found for requested number of bags: {}'.format(args.bags))
             sys.exit(0)
     else:
-        token = combinations[0]['booking_token']
+        i = 0
+        token = combinations[i]['booking_token']
     try:
         # Check and book the combination
         flight_checked, flight_invalid = False, False
         rep = 1
         while flight_checked is not True and flight_invalid is not True and rep < 50:
-            flight_checked, flight_invalid = check_flights(combinations[rep]['booking_token'], args)
+            flight_checked, flight_invalid = check_flights(combinations[i]['booking_token'], args)
             print('Checking flights... {}'.format(rep))
             rep += 1
             if not flight_checked and not flight_invalid:
                 time.sleep(5)
-        if flight_checked == True and flight_invalid == False:
+        if flight_checked is True and flight_invalid is False:
             booking = save_booking(token, args)
             print('Checked: {}'.format(flight_checked))
             print('Invalid: {}'.format(flight_invalid))
